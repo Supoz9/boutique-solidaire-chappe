@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<!--
+  ============================================================
+  BOUTIQUE SOLIDAIRE — Lycée Claude Chappe (Projet E3D)
+  Fichier : index.html
+  Rôle    : STRUCTURE de la page (le "squelette").
+            - style.css  s'occupe de l'APPARENCE
+            - app.js     s'occupe du FONCTIONNEMENT
+  ============================================================
+  RGPD : cette application ne demande et ne stocke JAMAIS
+  de nom, prénom ou classe d'élève. Uniquement des données
+  sur les vêtements (catégorie, taille, usage...).
+  ============================================================
+-->
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <!-- Indispensable pour un affichage correct sur smartphone -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#1f6f5c">
+  <title>Boutique Solidaire — Gestion de stock</title>
+
+  <!-- Notre feuille de style -->
+  <link rel="stylesheet" href="style.css">
+
+  <!--
+    Bibliothèques externes légères chargées depuis un CDN :
+    - qrcode.js    : DESSINE un QR code à partir d'un texte
+    - html5-qrcode : LIT un QR code avec la caméra
+    L'attribut "defer" charge les scripts sans bloquer l'affichage,
+    et les exécute DANS L'ORDRE une fois la page construite.
+  -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" defer></script>
+
+  <!-- Notre code, chargé en dernier car il utilise les deux bibliothèques -->
+  <script src="app.js" defer></script>
+</head>
+
+<body>
+
+  <!-- ===================== EN-TÊTE ===================== -->
+  <header class="entete">
+    <h1>🧥 Boutique Solidaire</h1>
+    <p class="sous-titre">Lycée Claude Chappe — Gestion du stock</p>
+  </header>
+
+  <!-- ===================== CONTENU PRINCIPAL ===================== -->
+  <!-- Chaque <section class="onglet"> est un écran. Un seul est visible à la fois
+       (celui qui a la classe "actif", gérée par app.js). -->
+  <main>
+
+    <!-- ========== ONGLET 1 : SCAN RAPIDE ========== -->
+    <section id="onglet-scan" class="onglet actif" aria-labelledby="titre-scan">
+      <h2 id="titre-scan">📷 Scan rapide</h2>
+      <p class="aide">Scannez l'étiquette d'un vêtement pour enregistrer un don.</p>
+
+      <button type="button" id="btn-camera" class="btn btn-principal btn-geant">
+        📷 Activer la caméra
+      </button>
+
+      <!-- La bibliothèque html5-qrcode affiche la vidéo de la caméra ici -->
+      <div id="lecteur-qr" class="lecteur-qr"></div>
+
+      <!-- La fiche du vêtement scanné s'affiche ici -->
+      <div id="resultat-scan" aria-live="polite"></div>
+    </section>
+
+    <!-- ========== ONGLET 2 : AJOUTER UN ARTICLE & ÉTIQUETTES ========== -->
+    <section id="onglet-ajout" class="onglet" aria-labelledby="titre-ajout">
+      <h2 id="titre-ajout">➕ Ajouter un article</h2>
+      <p class="aide">Uniquement des listes déroulantes : pas de faute de frappe possible.
+        Les choix sont remplis automatiquement par <code>app.js</code>.</p>
+
+      <form id="form-ajout" class="carte formulaire">
+        <label for="champ-famille">Famille</label>
+        <select id="champ-famille" required></select>
+
+        <label for="champ-categorie">Catégorie</label>
+        <select id="champ-categorie" required></select>
+
+        <label for="champ-taille">Taille / pointure</label>
+        <select id="champ-taille" required></select>
+
+        <label for="champ-usage">Usage</label>
+        <select id="champ-usage" required></select>
+
+        <label for="champ-quantite">Nombre d'articles identiques</label>
+        <select id="champ-quantite"></select>
+
+        <button type="submit" class="btn btn-principal btn-geant">✅ Enregistrer</button>
+      </form>
+
+      <!-- Le ou les QR codes des articles qui viennent d'être créés -->
+      <div id="resultat-ajout" aria-live="polite"></div>
+
+      <h2>🏷️ Étiquettes à imprimer</h2>
+      <p class="aide">Cochez les articles puis imprimez. Une planche A4 contient 24 étiquettes
+        (3 colonnes × 8 lignes). Dans la fenêtre d'impression, choisissez
+        <strong>Marges : aucune</strong> et <strong>Échelle : 100 %</strong>.</p>
+
+      <div class="barre-boutons">
+        <button type="button" id="btn-tout-cocher" class="btn btn-secondaire">☑️ Tout cocher</button>
+        <button type="button" id="btn-tout-decocher" class="btn btn-secondaire">⬜ Tout décocher</button>
+      </div>
+
+      <p id="compteur-etiquettes" class="compteur-texte">0 étiquette sélectionnée</p>
+
+      <button type="button" id="btn-imprimer" class="btn btn-principal btn-geant">
+        🖨️ Imprimer une planche d'étiquettes A4
+      </button>
+
+      <ul id="liste-etiquettes" class="liste"></ul>
+    </section>
+
+    <!-- ========== ONGLET 3 : STOCK ACTUEL ========== -->
+    <section id="onglet-stock" class="onglet" aria-labelledby="titre-stock">
+      <h2 id="titre-stock">📦 Stock actuel</h2>
+
+      <div class="carte filtres">
+        <label for="filtre-categorie">Catégorie</label>
+        <select id="filtre-categorie"></select>
+
+        <label for="filtre-taille">Taille</label>
+        <select id="filtre-taille"></select>
+
+        <label for="filtre-usage">Usage</label>
+        <select id="filtre-usage"></select>
+      </div>
+
+      <p id="compteur-stock" class="compteur-texte"></p>
+
+      <!-- La liste des articles EN_STOCK est construite par app.js -->
+      <ul id="liste-stock" class="liste"></ul>
+    </section>
+
+    <!-- ========== ONGLET 4 : HISTORIQUE & BILANS E3D ========== -->
+    <section id="onglet-historique" class="onglet" aria-labelledby="titre-historique">
+      <h2 id="titre-historique">📊 Historique &amp; bilans E3D</h2>
+
+      <label for="select-annee">Année scolaire</label>
+      <select id="select-annee"></select>
+
+      <!-- Les 3 compteurs clés -->
+      <div class="compteurs">
+        <div class="compteur compteur-entree">
+          <span class="compteur-valeur" id="total-entrees">0</span>
+          <span class="compteur-libelle">Total entrées</span>
+        </div>
+        <div class="compteur compteur-sortie">
+          <span class="compteur-valeur" id="total-sorties">0</span>
+          <span class="compteur-libelle">Total sorties (dons)</span>
+        </div>
+        <div class="compteur compteur-stock">
+          <span class="compteur-valeur" id="total-stock">0</span>
+          <span class="compteur-libelle">Stock disponible</span>
+        </div>
+      </div>
+
+      <!-- Petit bilan des dons par catégorie (utile pour le rapport E3D) -->
+      <h3>Dons par catégorie</h3>
+      <div class="tableau-conteneur">
+        <table class="tableau">
+          <thead>
+            <tr><th>Catégorie</th><th>Stage (PFMP)</th><th>Quotidien</th><th>Total</th></tr>
+          </thead>
+          <tbody id="tableau-bilan"></tbody>
+        </table>
+      </div>
+
+      <h3>Journal des mouvements</h3>
+      <p class="aide">Le journal est immuable : aucun mouvement ne peut être supprimé.</p>
+      <div class="tableau-conteneur">
+        <table class="tableau">
+          <thead>
+            <tr>
+              <th>Date et heure</th>
+              <th>Type</th>
+              <th>Article</th>
+              <th>Catégorie</th>
+              <th>Taille</th>
+              <th>Usage</th>
+            </tr>
+          </thead>
+          <tbody id="tableau-journal"></tbody>
+        </table>
+      </div>
+
+      <h3>Exports et sauvegardes</h3>
+      <div class="pile-boutons">
+        <button type="button" id="btn-export-csv" class="btn btn-principal">
+          📄 Export CSV (LibreOffice / Excel)
+        </button>
+        <button type="button" id="btn-sauvegarder" class="btn btn-secondaire">
+          💾 Sauvegarder la base (JSON)
+        </button>
+        <!-- Un <label> relié à un <input type="file"> caché : plus joli qu'un champ fichier classique -->
+        <label for="input-restaurer" class="btn btn-secondaire">
+          📂 Restaurer la base (JSON)
+        </label>
+        <input type="file" id="input-restaurer" accept=".json,application/json" hidden>
+      </div>
+      <p class="aide">Conseil : sauvegardez la base régulièrement (par exemple chaque vendredi).
+        Les données sont stockées dans CE navigateur uniquement : si l'historique du navigateur
+        est effacé, seule la sauvegarde JSON permet de tout récupérer.</p>
+    </section>
+
+  </main>
+
+  <!-- ===================== NAVIGATION EN 4 ONGLETS ===================== -->
+  <!-- Barre fixée en bas de l'écran : facile à atteindre avec le pouce sur smartphone -->
+  <nav class="navigation" aria-label="Navigation principale">
+    <button type="button" class="nav-bouton actif" data-onglet="onglet-scan">
+      <span class="nav-icone">📷</span><span>Scan</span>
+    </button>
+    <button type="button" class="nav-bouton" data-onglet="onglet-ajout">
+      <span class="nav-icone">➕</span><span>Ajouter</span>
+    </button>
+    <button type="button" class="nav-bouton" data-onglet="onglet-stock">
+      <span class="nav-icone">📦</span><span>Stock</span>
+    </button>
+    <button type="button" class="nav-bouton" data-onglet="onglet-historique">
+      <span class="nav-icone">📊</span><span>Bilans</span>
+    </button>
+  </nav>
+
+  <!-- Petit message de confirmation ou d'erreur qui apparaît puis disparaît -->
+  <div id="message" class="message" role="status" aria-live="polite"></div>
+
+  <!-- Zone invisible à l'écran : sert UNIQUEMENT à l'impression des planches d'étiquettes -->
+  <div id="zone-impression"></div>
+
+</body>
+</html>
